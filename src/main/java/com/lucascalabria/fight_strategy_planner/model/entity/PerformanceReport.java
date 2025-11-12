@@ -3,6 +3,7 @@ package com.lucascalabria.fight_strategy_planner.model.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -22,8 +23,8 @@ public class PerformanceReport implements Serializable {
     @JoinColumn(name = "fighter_id", nullable = false)
     private Fighter fighter;
 
-    @Column(precision = 4, scale = 2, nullable = false)
-    private Double averageScore;
+    @Column(name = "average_score", precision = 4, scale = 2)
+    private BigDecimal averageScore;
 
     @Column(nullable = false)
     private String reportPeriod;

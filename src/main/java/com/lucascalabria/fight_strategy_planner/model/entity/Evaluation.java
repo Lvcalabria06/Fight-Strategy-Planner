@@ -3,6 +3,7 @@ package com.lucascalabria.fight_strategy_planner.model.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -27,7 +28,7 @@ public class Evaluation implements Serializable {
     private int focus;
 
     @Column(name = "average_score", precision = 4, scale = 2)
-    private Double averageScore;
+    private BigDecimal averageScore;
 
     @Column(name = "evaluation_date", updatable = false)
     private LocalDateTime evaluationDate = LocalDateTime.now();
