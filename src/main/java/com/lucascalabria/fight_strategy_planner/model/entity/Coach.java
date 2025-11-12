@@ -34,4 +34,5 @@ public class Coach implements Serializable {
 
     @OneToMany(mappedBy = "coach")
     private List<Fighter> fighters;
+
 }

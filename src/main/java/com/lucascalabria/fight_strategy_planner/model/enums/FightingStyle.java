@@ -1,4 +1,4 @@
-package com.lucascalabria.fight_strategy_planner.model.entity.enums;
+package com.lucascalabria.fight_strategy_planner.model.enums;
 
 public enum FightingStyle {
     BOXING,

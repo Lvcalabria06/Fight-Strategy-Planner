@@ -1,7 +1,7 @@
 package com.lucascalabria.fight_strategy_planner.model.entity;
 
-import com.lucascalabria.fight_strategy_planner.model.entity.enums.FightingStyle;
-import com.lucascalabria.fight_strategy_planner.model.entity.enums.WeightCategory;
+import com.lucascalabria.fight_strategy_planner.model.enums.FightingStyle;
+import com.lucascalabria.fight_strategy_planner.model.enums.WeightCategory;
 import jakarta.persistence.*;
 import lombok.*;
 import java.io.Serializable;
@@ -50,4 +50,5 @@ public class Fighter implements Serializable {
 
     @OneToMany(mappedBy = "fighter", cascade = CascadeType.ALL)
     private List<PerformanceReport> performanceReports;
+
 }
