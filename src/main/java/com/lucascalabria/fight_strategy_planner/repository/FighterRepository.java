@@ -8,7 +8,5 @@ import java.util.List;
 
 @Repository
 public interface FighterRepository extends JpaRepository<Fighter, Long> {
-    // find all fighters from one Coach
-    List<Fighter> findByCoachId(Long coachId);
-
+    boolean existsByName(String name);
 }

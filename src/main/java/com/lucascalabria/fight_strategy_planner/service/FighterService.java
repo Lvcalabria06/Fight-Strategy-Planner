@@ -1,88 +1,89 @@
 package com.lucascalabria.fight_strategy_planner.service;
 
-import com.lucascalabria.fight_strategy_planner.model.dto.FighterRequestDTO;
-import com.lucascalabria.fight_strategy_planner.model.dto.FighterResponseDTO;
+import com.lucascalabria.fight_strategy_planner.model.dto.FighterGetDTO;
+import com.lucascalabria.fight_strategy_planner.model.dto.FighterPostDTO;
+import com.lucascalabria.fight_strategy_planner.model.dto.FighterUpdateDTO;
 import com.lucascalabria.fight_strategy_planner.model.entity.Coach;
 import com.lucascalabria.fight_strategy_planner.model.entity.Fighter;
 import com.lucascalabria.fight_strategy_planner.repository.CoachRepository;
 import com.lucascalabria.fight_strategy_planner.repository.FighterRepository;
-import jakarta.persistence.EntityNotFoundException;
-import lombok.RequiredArgsConstructor;
+import com.lucascalabria.fight_strategy_planner.util.FighterConversor;
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Optional;
 
+@AllArgsConstructor
 @Service
-@RequiredArgsConstructor
 public class FighterService {
-
     private final FighterRepository fighterRepository;
-    private final CoachRepository coachRepository;
+    private FighterConversor conversor;
+    private CoachRepository coachRepository;
 
-    @Transactional
-    public FighterResponseDTO createFighter(FighterRequestDTO dto) {
-        Coach coach = coachRepository.findById(dto.getCoachId())
-                .orElseThrow(() -> new EntityNotFoundException("Coach not found with id: " + dto.getCoachId()));
-
-        Fighter fighter = new Fighter();
-        fighter.setName(dto.getName());
-        fighter.setAge(dto.getAge());
-        fighter.setWeightCategory(dto.getWeightCategory());
-        fighter.setFightingStyle(dto.getFightingStyle());
-        fighter.setRecordSummary(dto.getRecordSummary());
-        fighter.setCoach(coach);
-
-        fighterRepository.save(fighter);
-
-        return new FighterResponseDTO(fighter);
+    public List<FighterGetDTO> listAllFighters() {
+        List<Fighter> fighters = fighterRepository.findAll();
+        List<FighterGetDTO> fighterDTOs = new ArrayList<>();
+        for (Fighter fighter : fighters) {
+            FighterGetDTO fighterDTO = conversor.toDTO(fighter);
+            fighterDTOs.add(fighterDTO);
+        }
+        return fighterDTOs;
     }
 
-    @Transactional(readOnly = true)
-    public FighterResponseDTO getFighterById(Long fighterId) {
-        Fighter fighter = fighterRepository.findById(fighterId)
-                .orElseThrow(() -> new EntityNotFoundException("Fighter not found with id: " + fighterId));
-        return new FighterResponseDTO(fighter);
-    }
+    public Fighter createFighter(FighterPostDTO fighterDTO) {
 
-
-    @Transactional(readOnly = true)
-    public List<FighterResponseDTO> getFightersByCoachId(Long coachId) {
-        List<Fighter> fighters = fighterRepository.findByCoachId(coachId);
-        return fighters.stream()
-                .map(FighterResponseDTO::new)
-                .collect(Collectors.toList());
-    }
-
-    @Transactional
-    public FighterResponseDTO updateFighter(Long fighterId, FighterRequestDTO dto) {
-        Fighter fighter = fighterRepository.findById(fighterId)
-                .orElseThrow(() -> new EntityNotFoundException("Fighter not found with id: " + fighterId));
-
-
-        if (!fighter.getCoach().getId().equals(dto.getCoachId())) {
-            Coach newCoach = coachRepository.findById(dto.getCoachId())
-                    .orElseThrow(() -> new EntityNotFoundException("New Coach not found with id: " + dto.getCoachId()));
-            fighter.setCoach(newCoach);
+        if (fighterDTO.getName() == null || fighterDTO.getName().trim().isEmpty()) {
+            throw new IllegalArgumentException("Fighter name is required.");
         }
 
-        fighter.setName(dto.getName());
-        fighter.setAge(dto.getAge());
-        fighter.setWeightCategory(dto.getWeightCategory());
-        fighter.setFightingStyle(dto.getFightingStyle());
-        fighter.setRecordSummary(dto.getRecordSummary());
-
-        Fighter updatedFighter = fighterRepository.save(fighter);
-
-        return new FighterResponseDTO(updatedFighter);
-    }
-
-    @Transactional
-    public void deleteFighter(Long fighterId) {
-        if (!fighterRepository.existsById(fighterId)) {
-            throw new EntityNotFoundException("Fighter not found with id: " + fighterId);
+        if (fighterDTO.getAge() <= 0) {
+            throw new IllegalArgumentException("Fighter age must be greater than zero.");
         }
-        fighterRepository.deleteById(fighterId);
+
+        if (fighterDTO.getWeightCategory() == null) {
+            throw new IllegalArgumentException("Weight category is required.");
+        }
+
+        if (fighterDTO.getFightingStyle() == null) {
+            throw new IllegalArgumentException("Fighting style is required.");
+        }
+
+
+        if (fighterRepository.existsByName(fighterDTO.getName())) {
+            throw new IllegalArgumentException("A fighter with this name already exists.");
+        }
+        Coach coach = coachRepository.findById(fighterDTO.getCoachId())
+                .orElseThrow(() -> new IllegalArgumentException("Coach not found."));
+        Fighter fighter = conversor.toEntity(fighterDTO, coach);
+
+        return fighterRepository.save(fighter);
     }
+
+    public Fighter updateFighter(Long id, FighterUpdateDTO fighterUpdateDTO) {
+        Fighter fighter = fighterRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Fighter not found"));
+        if (fighterUpdateDTO.getName() != null) fighter.setName(fighterUpdateDTO.getName());
+        if (fighterUpdateDTO.getAge() != null) fighter.setAge(fighterUpdateDTO.getAge());
+        if (fighterUpdateDTO.getWeightCategory() != null) fighter.setWeightCategory(fighterUpdateDTO.getWeightCategory());
+        if (fighterUpdateDTO.getFightingStyle() != null) fighter.setFightingStyle(fighterUpdateDTO.getFightingStyle());
+        if (fighterUpdateDTO.getRecordSummary() != null) fighter.setRecordSummary(fighterUpdateDTO.getRecordSummary());
+        if (fighterUpdateDTO.getCoachId() != null) {
+            Coach coach = coachRepository.findById(fighterUpdateDTO.getCoachId())
+                    .orElseThrow(() -> new RuntimeException("Coach not found"));
+            fighter.setCoach(coach);
+        }
+
+        return fighterRepository.save(fighter);
+    }
+
+    public void deleteFighter(Long id) {
+        if (!fighterRepository.existsById(id)) {
+            throw new RuntimeException("Fighter not found");
+        }
+        fighterRepository.deleteById(id);
+    }
+
 }

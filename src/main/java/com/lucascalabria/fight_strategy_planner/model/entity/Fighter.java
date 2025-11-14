@@ -29,7 +29,7 @@ public class Fighter implements Serializable {
     @Column(name = "weight_category", nullable = false)
     private WeightCategory weightCategory;
 
-    @Enumerated(EnumType.ORDINAL)
+    @Enumerated(EnumType.STRING)
     private FightingStyle fightingStyle;
 
     @Column(columnDefinition = "TEXT")
