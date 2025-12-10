@@ -1,5 +1,6 @@
 package com.lucascalabria.fight_strategy_planner.model.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import java.io.Serializable;
@@ -46,6 +47,7 @@ public class TacticalPlan implements Serializable {
     private LocalDateTime createdAt = LocalDateTime.now();
 
     @OneToMany(mappedBy = "tacticalPlan", cascade = CascadeType.ALL)
+    @JsonIgnore
     private List<Evaluation> evaluations;
 
     @OneToMany(mappedBy = "tacticalPlan", cascade = CascadeType.ALL)

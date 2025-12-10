@@ -27,7 +27,7 @@ public class Evaluation implements Serializable {
     private int endurance;
     private int focus;
 
-    @Column(name = "average_score", precision = 4, scale = 2)
+    @Column(name = "average_score", precision = 4, scale = 2, insertable = false, updatable = false)
     private BigDecimal averageScore;
 
     @Column(name = "evaluation_date", updatable = false)
